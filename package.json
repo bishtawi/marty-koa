@@ -1,7 +1,7 @@
 {
-  "name": "marty-express",
+  "name": "marty-koa",
   "version": "0.3.0",
-  "description": "express.js middleware for Marty.js",
+  "description": "koa.js middleware for Marty.js",
   "main": "index.js",
   "directories": {
     "lib": "./lib"
@@ -11,15 +11,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:martyjs/marty-express.git"
+    "url": "git@github.com:bishtawi/marty-koa.git"
   },
   "keywords": [
     "react",
-    "flux",
-    "express"
+    "marty",
+    "koa"
   ],
   "dependencies": {
-    "express": "^4.11.2",
+    "react": "^0.13.1",
+    "react-router": "^0.13.2",
     "lodash": "^3.0.0"
   },
   "devDependencies": {
@@ -44,17 +45,18 @@
   },
   "peerDependencies": {
     "marty": "^0.9.0",
-    "react-router": "^0.13.0"
+    "react": "^0.13.1",
+    "react-router": "^0.13.2",
   },
   "author": "James Hollingworth",
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://raw.github.com/martyjs/marty-express/master/LICENSE"
+      "url": "https://raw.githubusercontent.com/bishtawi/marty-koa/master/LICENSE"
     }
   ],
   "bugs": {
-    "url": "https://github.com/martyjs/marty-express/issues"
+    "url": "https://github.com/bishtawi/marty-koa/issues"
   },
   "homepage": "https://martyjs.org"
 }

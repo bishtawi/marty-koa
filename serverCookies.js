@@ -1,32 +1,21 @@
-function ServerCookies(req, res) {
-  if (!req) {
-    throw new Error('req is required');
+"use strict";
+function ServerCookies(ctx) {
+  if (!ctx) {
+    throw new Error('koa context is required');
   }
 
-  if (!res) {
-    throw new Error('res is required');
-  }
-
-  this.req = req;
-  this.res = res;
+  this.ctx = ctx;
 }
 
 ServerCookies.prototype = {
-  get: function(key) {
-    if (this.req.cookies) {
-      return this.req.cookies[key];
-    }
-
-    console.warn(
-      'Warning: Could not find cookies in req. Do you have the cookie-parser middleware ' +
-      '(https://www.npmjs.com/package/cookie-parser) installed?'
-    );
+  get: function (key) {
+    return this.ctx.cookies.get(key);
   },
-  set: function(key, value, options) {
-    this.res.cookie(key, value, options);
+  set: function (key, value, options) {
+    this.ctx.cookies.set(key, value, options);
   },
-  expire: function(key) {
-    this.res.clearCookie(key);
+  expire: function (key) {
+    this.ctx.cookies.set(key, '');
   }
 }
 

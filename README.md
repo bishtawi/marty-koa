@@ -1,66 +1,75 @@
-[![Build Status](https://travis-ci.org/jhollingworth/marty-express.svg?branch=master)](https://travis-ci.org/jhollingworth/marty-express)
+# marty-koa
 
-[express](http://expressjs.com) middleware for building isomorphic applications with [Marty](http://martyjs.org) & [react-router](https://github.com/rackt/react-router).
+Forked from [marty-express](https://github.com/martyjs/marty-express) by [jhollingworth](https://github.com/jhollingworth) to work with koa instead of express
 
-##Usage
+## Major changes
+1. Works with Koa now (and obviously does not work with Express anymore)
+2. Final html rendered with React instead of your favorite node/express/koa render middleware
+3. options.view now takes in a React component instead of a path and is now required.
+4. options.rendered and options.error callbacks have been removed (I had no use for them but they can easily be readded if you need them)
+5. Return 404 status if Not Found route is hit
+6. Added options.getProps callback (see below on how to use)
 
-```js
-var Marty = require('marty');
-var Router = require('react-router');
-var RouteHandler = Router.RouteHandler;
+## New options.getProps callback function
 
-var routes = (
-  <Route handler={RouteHandler}>
-    <Route name='foo' path='/foo/:id' handler={Foo} />
-    <Route name='var' path='/bar/:id' handler={Bar} />
-  </Route>
-);
+You might want to send additional props to your final view React component (such as title or description). This callback function helps you do that.
 
-var app = express();
+The getProps function is passed the React Router state object and Marty's renderResult object. The "this" context is set to Koa's context.
 
-app.use(require('marty-express')({
-  routes: routes, // required
-  view: 'foo', // name of view to render, default: index
-  local: 'bar', // name of local variable in view, default: body
-  marty: ..., // instance of Marty to use, default: require('marty')
+The getProps function should return a object containing the props you would like to send to your view component.
+
+### Special props
+* Set is404 to true if you want to force a 404 status
+* Set is500 to true if you want to force a 500 status
+
+## Example on how to use
+
+index.js:
+````
+import DocumentTitle from 'react-document-title'
+
+app.use(require('./marty-koa')({
+  marty: require('marty'),
+  routes: require('./assets/js/routes'),
+  view: require('./view'),
+  getProps: function (state, renderResult) {
+    return {
+      title: DocumentTitle.rewind()
+    };
+  }
 }));
-```
+````
 
-##Quick start
+view.jsx:
+````
+import React from 'react'
 
-```
-make bootstrap      #Install all dependencies
-make test           #Run tests
-```
+export default React.createClass({
+  render: function () {
+    return (
+      <html>
+      <head>
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, minimum-scale=1, maximum-scale=1"/>
+        <title>{this.props.title}</title>
+        <script src="/static/assets/js/main.js"></script>
+      </head>
+      <body>
+      <div id="app" dangerouslySetInnerHTML={{__html: this.props.body}}></div>
+      </body>
+      </html>
+    );
+  }
+});
+````
 
-##Git Commit Messages
+React-Document-Title is obviously not a dependency, this is just an example on how you would use marty-koa and react-doument-title together to set the title. Similar logic can be used for setting meta description tag and various other things.
 
-* Use the present tense ("Add feature" not "Added feature")
-* Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
-* Limit the first line to 72 characters or less
-* Reference issues and pull requests liberally
-* Consider starting the commit message with an applicable emoji:
-  * :lipstick: `:lipstick:` when improving the format/structure of the code
-  * :racehorse: `:racehorse:` when improving performance
-  * :non-potable_water: `:non-potable_water:` when plugging memory leaks
-  * :memo: `:memo:` when writing docs
-  * :penguin: `:penguin:` when fixing something on Linux
-  * :apple: `:apple:` when fixing something on Mac OS
-  * :checkered_flag: `:checkered_flag:` when fixing something on Windows
-  * :bug: `:bug:` when fixing a bug
-  * :fire: `:fire:` when removing code or files
-  * :green_heart: `:green_heart:` when fixing the CI build
-  * :white_check_mark: `:white_check_mark:` when adding tests
-  * :lock: `:lock:` when dealing with security
-  * :arrow_up: `:arrow_up:` when upgrading dependencies
-  * :arrow_down: `:arrow_down:` when downgrading dependencies
+## TODO
+1. Update unit tests to use koa not express
+2. Build to npm
 
-(From [atom](https://atom.io/docs/latest/contributing#git-commit-messages))
+## License
 
-##Maintainers
-
-* [James Hollingworth](http://github.com/jhollingworth)
-
-##License
-
-* [MIT](https://raw.github.com/jhollingworth/marty-express/master/LICENSE)
+* [MIT](https://raw.githubusercontent.com/bishtawi/marty-koa/master/LICENSE)
