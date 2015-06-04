@@ -2,7 +2,11 @@
 
 Forked from [marty-express](https://github.com/martyjs/marty-express) by [jhollingworth](https://github.com/jhollingworth) to work with koa instead of express
 
-## Major changes
+## Marty compatibility
+* Works with Marty v0.10.x
+* For 0.9 support, you can use the [old version here](https://github.com/bishtawi/marty-koa/tree/marty-v0.9)
+
+## Major changes from marty-express
 1. Works with Koa now (and obviously does not work with Express anymore)
 2. Final html rendered with React instead of your favorite node/express/koa render middleware
 3. options.view now takes in a React component instead of a path and is now required.
@@ -31,6 +35,7 @@ import DocumentTitle from 'react-document-title'
 app.use(require('./marty-koa')({
   marty: require('marty'),
   routes: require('./assets/js/routes'),
+  application: require('./marty-application'),
   view: require('./view'),
   getProps: function (state, renderResult) {
     return {
@@ -56,7 +61,8 @@ export default React.createClass({
         <script src="/static/assets/js/main.js"></script>
       </head>
       <body>
-      <div id="app" dangerouslySetInnerHTML={{__html: this.props.body}}></div>
+        <div id="app" dangerouslySetInnerHTML={{__html: this.props.body}}></div>
+        <div dangerouslySetInnerHTML={{__html: this.props.state}}></div>
       </body>
       </html>
     );

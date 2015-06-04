@@ -1,21 +1,21 @@
 "use strict";
-function ServerCookies(ctx) {
-  if (!ctx) {
+function ServerCookies(koa) {
+  if (!koa) {
     throw new Error('koa context is required');
   }
 
-  this.ctx = ctx;
+  this.koa = koa;
 }
 
 ServerCookies.prototype = {
   get: function (key) {
-    return this.ctx.cookies.get(key);
+    return this.koa.cookies.get(key);
   },
   set: function (key, value, options) {
-    this.ctx.cookies.set(key, value, options);
+    this.koa.cookies.set(key, value, options);
   },
   expire: function (key) {
-    this.ctx.cookies.set(key, '');
+    this.koa.cookies.set(key, '');
   }
 }
 

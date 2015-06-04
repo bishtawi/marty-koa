@@ -22,29 +22,34 @@ module.exports = function (options) {
     throw new Error('view is required');
   }
 
+  if (!_.isFunction(options.application)) {
+    throw new Error('Must specify application type');
+  }
+
   var Marty = options.marty || require('marty');
 
-  Marty.CookieStateSource.setCookieFactory(function (context) {
-    return new ServerCookies(context.koaContext);
+  Marty.CookieStateSource.setCookieFactory(function (app) {
+    return new ServerCookies(app.koa);
   });
 
-  Marty.LocationStateSource.setLocationFactory(function (context) {
-    return _.pick(context.koaContext, 'url', 'protocol', 'query', 'path', 'hostname');
+  Marty.LocationStateSource.setLocationFactory(function (app) {
+    return _.pick(app.koa, 'url', 'protocol', 'query', 'path', 'hostname');
   });
 
   Marty.HttpStateSource.addHook({
+    id: 'marty-koa-http-state-source',
     priority: 0.00000000001,
     before: function (req) {
-      var context = this.context;
+      var app = this.app;
 
-      if (!context || !context.koaContext) {
+      if (!app || !app.koa) {
         console.error("missing koa context");
         return;
       }
 
       // Don't change fully qualified urls
       if (!/^https?:\/\//.test(req.url)) {
-        req.url = getBaseUrl(context.koaContext) + req.url;
+        req.url = getBaseUrl(app.koa) + req.url;
       }
 
       // Add all headers from original request
@@ -55,14 +60,14 @@ module.exports = function (options) {
       }
 
       function headers() {
-        return _.omit(context.koaContext.headers, HEADERS_TO_IGNORE);
+        return _.omit(app.koa.headers, HEADERS_TO_IGNORE);
       }
     }
   });
 
   return function *() {
     var url = this.url;
-    var koaContext = this;
+    var koa = this;
 
     function renderReact() {
       return new Promise(function (resolve, reject) {
@@ -90,24 +95,23 @@ module.exports = function (options) {
         });
 
         router.run(function (Handler, state) {
-          var context = Marty.createContext();
-          context.koaContext = koaContext;
+          var app = new options.application({
+            koa: koa
+          });
 
-          var renderOptions = {
-            type: Handler,
-            context: context,
-            props: state.params,
-            timeout: options.timeout
-          };
+          var element = React.createElement(Marty.ApplicationContainer, {app: app},
+            React.createElement(Handler, state.params)
+          );
 
-          Marty
-            .renderToString(renderOptions)
+          app.renderToString(element, options)
             .then(function (renderResult) {
               var data = {};
-              if (options.getProps) {
-                data = options.getProps.call(koaContext, state, renderResult) || {};
+              if (_.isFunction(options.getProps)) {
+                data = options.getProps.call(koa, state, renderResult) || {};
               }
-              data[options.local || 'body'] = renderResult.html;
+              data[options.body || 'body'] = renderResult.htmlBody.trim();
+              data[options.state || 'state'] = renderResult.htmlState.trim();
+
               var doctype = options.doctype || '<!DOCTYPE html>';
               var View = React.createFactory(options.view);
 
